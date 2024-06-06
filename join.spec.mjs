@@ -14,14 +14,15 @@ import {
   rightOuterJoin
 } from './join.mjs'
 
+function declare (iterable, mode) {
+  return fromIterable(iterable, item => item.id, mode)
+}
+
 test('fromIterable without conflicts', t => {
-  const map = fromIterable(
-    [
-      { id: 'a', value: 10 },
-      { id: 'b', value: 32 }
-    ],
-    item => item.id
-  )
+  const map = declare([
+    { id: 'a', value: 10 },
+    { id: 'b', value: 32 }
+  ])
 
   t.true(map instanceof Map)
 
@@ -36,23 +37,19 @@ test('fromIterable without conflicts', t => {
 
 test('fromIterable with conflicts', t => {
   t.throws(() => {
-    fromIterable(
-      [
-        { id: 'a', value: 10 },
-        { id: 'a', value: 32 }
-      ],
-      item => item.id
-    )
+    declare([
+      { id: 'a', value: 10 },
+      { id: 'a', value: 32 }
+    ])
   })
 })
 
 test('fromIterable ignore', t => {
-  const map = fromIterable(
+  const map = declare(
     [
       { id: 'a', value: 42 },
       { id: 'a', value: 0 }
     ],
-    item => item.id,
     'ignore'
   )
   t.deepEqual(map.get('a'), { id: 'a', value: 42 })
@@ -70,9 +67,7 @@ test('fromIterable override', t => {
   t.deepEqual(map.get('a'), { id: 'a', value: 42 })
 })
 
-function declare (iterable) {
-  return fromIterable(iterable, item => item.id)
-}
+
 
 test('fullJoin', t => {
   t.plan(8)
